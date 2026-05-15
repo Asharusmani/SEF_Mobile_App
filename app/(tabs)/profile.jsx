@@ -3,32 +3,43 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
+  StatusBar,
   TouchableOpacity,
   Alert,
+  ScrollView,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../constants/theme';
 
 const MENU_ITEMS = [
-  { icon: '📋', label: 'My Submissions', count: '5' },
+  { icon: '📋', label: 'My Submissions',   count: '5' },
   { icon: '🏫', label: 'Assigned Schools', count: '3' },
-  { icon: '📊', label: 'Reports', count: '' },
-  { icon: '⚙️', label: 'Settings', count: '' },
-  { icon: '❓', label: 'Help & Support', count: '' },
+  { icon: '📊', label: 'Reports',          count: ''  },
+  { icon: '⚙️', label: 'Settings',         count: ''  },
+  { icon: '❓', label: 'Help & Support',   count: ''  },
 ];
 
 export default function ProfileScreen() {
+  const insets = useSafeAreaInsets();
+
   const handleSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign Out', style: 'destructive', onPress: () => router.replace('/(auth)/signin') },
+      {
+        text: 'Sign Out',
+        style: 'destructive',
+        onPress: () => router.replace('/(auth)/signin'),
+      },
     ]);
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={Colors.primary} translucent />
+
+      {/* ── Header — respects notch / status bar on both platforms ── */}
+      <View style={[styles.header, { paddingTop: insets.top + Spacing.lg }]}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>U</Text>
         </View>
@@ -39,7 +50,15 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <View style={styles.content}>
+      {/* ── Scrollable content — bottom inset so last item clears home bar ── */}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: insets.bottom + Spacing.xl },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         {MENU_ITEMS.map((item, index) => (
           <TouchableOpacity key={index} style={styles.menuItem} activeOpacity={0.7}>
             <Text style={styles.menuIcon}>{item.icon}</Text>
@@ -60,79 +79,85 @@ export default function ProfileScreen() {
         </TouchableOpacity>
 
         <Text style={styles.version}>SEF Student Profile v1.0</Text>
-      </View>
-    </SafeAreaView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: Colors.gray100 },
+  container: { flex: 1, backgroundColor: Colors.gray100 },
+
   header: {
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    paddingVertical: Spacing.xxxl,
+    backgroundColor:   Colors.primary,
+    alignItems:        'center',
+    paddingBottom:     Spacing.xxxl,
     paddingHorizontal: Spacing.xl,
+    // paddingTop set dynamically above via insets.top
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width:           80,
+    height:          80,
+    borderRadius:    40,
     backgroundColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: 'rgba(255,255,255,0.4)',
-    marginBottom: Spacing.md,
+    alignItems:      'center',
+    justifyContent:  'center',
+    borderWidth:     3,
+    borderColor:     'rgba(255,255,255,0.4)',
+    marginBottom:    Spacing.md,
   },
   avatarText: { fontSize: 34, fontWeight: '700', color: Colors.white },
-  name: { fontSize: FontSize.xl, fontWeight: '800', color: Colors.white },
-  email: { fontSize: FontSize.sm, color: 'rgba(255,255,255,0.7)', marginTop: 4 },
+  name:       { fontSize: FontSize.xl, fontWeight: '800', color: Colors.white },
+  email:      { fontSize: FontSize.sm, color: 'rgba(255,255,255,0.7)', marginTop: 4 },
   badge: {
-    marginTop: Spacing.sm,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    marginTop:         Spacing.sm,
+    backgroundColor:   'rgba(255,255,255,0.2)',
     paddingHorizontal: Spacing.md,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.full,
+    paddingVertical:   4,
+    borderRadius:      BorderRadius.full,
   },
   badgeText: { fontSize: FontSize.xs, color: Colors.white, fontWeight: '700' },
-  content: { flex: 1, padding: Spacing.xl },
+
+  scroll:  { flex: 1 },
+  content: { padding: Spacing.xl },
+
   menuItem: {
     backgroundColor: Colors.white,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: Spacing.sm,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    borderRadius:    BorderRadius.md,
+    padding:         Spacing.lg,
+    flexDirection:   'row',
+    alignItems:      'center',
+    marginBottom:    Spacing.sm,
+    shadowColor:     '#000',
+    shadowOffset:    { width: 0, height: 2 },
+    shadowOpacity:   0.05,
+    shadowRadius:    4,
+    elevation:       2,
   },
-  menuIcon: { fontSize: 20, marginRight: Spacing.md },
+  menuIcon:  { fontSize: 20, marginRight: Spacing.md },
   menuLabel: { flex: 1, fontSize: FontSize.md, color: Colors.black, fontWeight: '500' },
   menuRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   countBadge: {
-    backgroundColor: Colors.primaryLight,
+    backgroundColor:   Colors.primaryLight,
     paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
-    borderRadius: BorderRadius.full,
+    paddingVertical:   2,
+    borderRadius:      BorderRadius.full,
   },
   countText: { fontSize: FontSize.xs, color: Colors.primary, fontWeight: '700' },
   menuArrow: { fontSize: 22, color: Colors.gray400 },
+
   signOutBtn: {
-    marginTop: Spacing.xl,
-    borderWidth: 2,
-    borderColor: Colors.error,
-    borderRadius: BorderRadius.lg,
+    marginTop:     Spacing.xl,
+    borderWidth:   2,
+    borderColor:   Colors.error,
+    borderRadius:  BorderRadius.lg,
     paddingVertical: Spacing.lg,
-    alignItems: 'center',
+    alignItems:    'center',
   },
   signOutText: { fontSize: FontSize.md, color: Colors.error, fontWeight: '700' },
   version: {
     textAlign: 'center',
-    color: Colors.gray400,
-    fontSize: FontSize.xs,
+    color:     Colors.gray400,
+    fontSize:  FontSize.xs,
     marginTop: Spacing.xl,
   },
 });

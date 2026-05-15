@@ -8,139 +8,144 @@ import FormInput from '../ui/FormInput';
 import FormSelect from '../ui/FormSelect';
 import DocumentUpload from '../ui/DocumentUpload';
 import PrimaryButton from '../ui/PrimaryButton';
-import { Colors, Spacing, FontSize, BorderRadius } from '../../constants/theme';
+import CustomDatePicker from '../ui/CustomDatePicker';
 
-// DB field mapping (students table):
-// grNo             STRING(50)  allowNull: false
-// studentId        STRING(50)  allowNull: false, unique
-// cnicBForm        STRING(20)  allowNull: true
-// studentName      STRING(150) allowNull: false
-// surname          STRING(100) allowNull: true
-// dob              DATEONLY    allowNull: true   → DD/MM/YYYY string on form
-// gender           STRING(10)  allowNull: true
-// religion         STRING(20)  allowNull: true
-// bloodGroup       STRING(5)   allowNull: true
-// motherTongue     STRING(50)  allowNull: true
-// address          STRING(300) allowNull: true
-// village          STRING(100) allowNull: true
-// emergencyContact STRING(20)  allowNull: true
-// refugee          STRING(5)   allowNull: true   defaultValue: "No"
-// photoUrl         STRING(500) allowNull: true
+// ─────────────────────────────────────────────────────────────────────────────
+// Backend field mapping (student model + studentSchema):
 //
-// DB field mapping (student_disabilities table):
-// hasDisability    STRING(5)   allowNull: true   defaultValue: "No"
-// seeingDiff       STRING(5)   allowNull: true   defaultValue: "No"
-// hearingDiff      STRING(5)   allowNull: true   defaultValue: "No"
-// walkingDiff      STRING(5)   allowNull: true   defaultValue: "No"
-// rememberingDiff  STRING(5)   allowNull: true   defaultValue: "No"
-// speechDisorder   STRING(5)   allowNull: true   defaultValue: "No"
-// selfCare         STRING(5)   allowNull: true   defaultValue: "No"
+// gr_no              → GR Number
+// name_of_student    → Student Full Name
+// student_dob        → Date of Birth  FORMAT: DD-MM-YYYY  ← IMPORTANT
+// gender             → "Male" | "Female"  (Other nahi backend mein)
+// religion           → "Islam" | "Christianity" | "Hinduism" | "Other"
+// village            → Village/Area
+// mother_tongue      → Mother Tongue
+// blood_group        → Blood Group
+// refugee_student    → "Yes" | "No"  (boolean nahi, string!)
+// disability         → "Yes" | "No"
+// seeing_difficulty  → "Yes" | "No"
+// hearing_difficulty → "Yes" | "No"
+// walking_difficulty → "Yes" | "No"
+// remembering_or_concentrating → "Yes" | "No"
+// speech_disorder    → "Yes" | "No"
+// self_care          → "Yes" | "No"
+// bform_no           → CNIC/B-Form  FORMAT: XXXXX-XXXXXXX-X
+// residential_address → Address
+// emergency_contact  → 11 digits NO dash  (03XXXXXXXXX)
+// school_code        → passed from parent screen
+// ─────────────────────────────────────────────────────────────────────────────
 
+// Backend mein sirf Male/Female — Other nahi
 const GENDERS = [
-  { label: 'Male',   value: 'male' },
-  { label: 'Female', value: 'female' },
-  { label: 'Other',  value: 'other' },
+  { label: 'Male',   value: 'Male' },
+  { label: 'Female', value: 'Female' },
 ];
+
+// Backend: "Islam" | "Christianity" | "Hinduism" | "Other"
 const RELIGIONS = [
-  { label: 'Muslim',     value: 'muslim' },
-  { label: 'Non-Muslim', value: 'non_muslim' },
+  { label: 'Islam',       value: 'Islam' },
+  { label: 'Christianity',value: 'Christianity' },
+  { label: 'Hinduism',    value: 'Hinduism' },
+  { label: 'Other',       value: 'Other' },
 ];
+
 const MOTHER_TONGUES = [
-  { label: 'Sindhi',  value: 'sindhi' },
-  { label: 'Urdu',    value: 'urdu' },
-  { label: 'Balochi', value: 'balochi' },
-  { label: 'Brahvi',  value: 'brahvi' },
-  { label: 'Punjabi', value: 'punjabi' },
-  { label: 'Pashto',  value: 'pashto' },
-  { label: 'Other',   value: 'other' },
+  { label: 'Sindhi',  value: 'Sindhi' },
+  { label: 'Urdu',    value: 'Urdu' },
+  { label: 'Balochi', value: 'Balochi' },
+  { label: 'Brahvi',  value: 'Brahvi' },
+  { label: 'Punjabi', value: 'Punjabi' },
+  { label: 'Pashto',  value: 'Pashto' },
+  { label: 'Other',   value: 'Other' },
 ];
+
 const BLOOD_GROUPS = [
-  { label: 'A+',  value: 'a+' },
-  { label: 'A-',  value: 'a-' },
-  { label: 'B+',  value: 'b+' },
-  { label: 'B-',  value: 'b-' },
-  { label: 'AB+', value: 'ab+' },
-  { label: 'AB-', value: 'ab-' },
-  { label: 'O+',  value: 'o+' },
-  { label: 'O-',  value: 'o-' },
+  { label: 'A+',  value: 'A+' },
+  { label: 'A-',  value: 'A-' },
+  { label: 'B+',  value: 'B+' },
+  { label: 'B-',  value: 'B-' },
+  { label: 'AB+', value: 'AB+' },
+  { label: 'AB-', value: 'AB-' },
+  { label: 'O+',  value: 'O+' },
+  { label: 'O-',  value: 'O-' },
 ];
+
 const DISABILITY_ITEMS = [
-  { key: 'seeingDifficulty',     label: 'Seeing Difficulty',            icon: '👁' },
-  { key: 'hearingDifficulty',    label: 'Hearing Difficulty',           icon: '👂' },
-  { key: 'walkingDifficulty',    label: 'Walking Difficulty',           icon: '🦯' },
-  { key: 'rememberingDifficulty',label: 'Remembering / Concentrating',  icon: '🧠' },
-  { key: 'speechDisorder',       label: 'Speech Disorder',              icon: '🗣' },
-  { key: 'selfCare',             label: 'Self Care (Washing / Dressing)',icon: '🤲' },
+  { key: 'seeing_difficulty',           label: 'Seeing Difficulty',             icon: '👁'  },
+  { key: 'hearing_difficulty',          label: 'Hearing Difficulty',            icon: '👂'  },
+  { key: 'walking_difficulty',          label: 'Walking Difficulty',            icon: '🦯'  },
+  { key: 'remembering_or_concentrating',label: 'Remembering / Concentrating',  icon: '🧠'  },
+  { key: 'speech_disorder',             label: 'Speech Disorder',              icon: '🗣'   },
+  { key: 'self_care',                   label: 'Self Care (Washing/Dressing)', icon: '🤲'  },
 ];
 
-// Yup schema — every max() mirrors the DB STRING(n) length
+// ── B-Form formatter: XXXXX-XXXXXXX-X ────────────────────────────────────────
+const formatBForm = (text) => {
+  const digits = text.replace(/\D/g, '').slice(0, 13);
+  if (digits.length <= 5)  return digits;
+  if (digits.length <= 12) return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+  return `${digits.slice(0, 5)}-${digits.slice(5, 12)}-${digits.slice(12)}`;
+};
+
+// ── Emergency contact: raw 11 digits (no dash) for backend ───────────────────
+// Display ke liye 03XX-XXXXXXX dikhao, lekin backend ko 03XXXXXXXXX bhejo
+const formatPhoneDisplay = (digits) => {
+  if (!digits) return '';
+  const d = digits.replace(/\D/g, '');
+  if (d.length <= 4) return d;
+  return `${d.slice(0, 4)}-${d.slice(4)}`;
+};
+
+// DD/MM/YYYY (CustomDatePicker) → DD-MM-YYYY (backend expects)
+const convertDateForBackend = (dateStr) => {
+  if (!dateStr) return '';
+  return dateStr.replace(/\//g, '-');
+};
+
+// ── Yup validation (frontend display ke liye) ─────────────────────────────────
 const studentSchema = Yup.object({
-  grNumber: Yup.string()
+  gr_no: Yup.string()
     .required('GR Number is required')
-    .max(50, 'GR Number must be under 50 characters'),       // grNo STRING(50)
+    .max(50, 'GR Number must be under 50 characters'),
 
-  studentName: Yup.string()
+  name_of_student: Yup.string()
     .required('Student name is required')
-    .max(150, 'Name must be under 150 characters'),          // studentName STRING(150)
+    .max(150, 'Name must be under 150 characters'),
 
-  surname: Yup.string()
-    .max(100, 'Surname must be under 100 characters')        // surname STRING(100)
-    .nullable().optional(),
-
-  dateOfBirth: Yup.string()
+  student_dob: Yup.string()
     .required('Date of birth is required')
-    .matches(/^\d{2}\/\d{2}\/\d{4}$/, 'Use format DD/MM/YYYY'), // dob DATEONLY
+    .matches(/^\d{2}\/\d{2}\/\d{4}$/, 'Select date of birth'),
 
   gender: Yup.string()
-    .required('Please select gender')
-    .max(10),                                                // gender STRING(10)
+    .oneOf(['Male', 'Female'], 'Select gender')
+    .required('Please select gender'),
 
   religion: Yup.string()
-    .required('Please select religion')
-    .max(20),                                                // religion STRING(20)
+    .oneOf(['Islam', 'Christianity', 'Hinduism', 'Other'], 'Select religion')
+    .required('Please select religion'),
 
-  motherTongue: Yup.string()
-    .max(50)                                                 // motherTongue STRING(50)
-    .nullable().optional(),
+  mother_tongue: Yup.string().max(50).nullable().optional(),
+  blood_group:   Yup.string().max(5).nullable().optional(),
 
-  bloodGroup: Yup.string()
-    .max(5)                                                  // bloodGroup STRING(5)
-    .nullable().optional(),
-
-  bForm: Yup.string()
-    .max(20, 'CNIC/B-Form too long')                        // cnicBForm STRING(20)
+  bform_no: Yup.string()
     .nullable()
-    .transform((v) => v === '' ? null : v)
-    .matches(/^\d{5}-\d{7}-\d$/, 'Format: 12345-1234567-1')
+    .transform((v) => (v === '' ? null : v))
+    .matches(/^\d{5}-\d{7}-\d$/, 'Format: XXXXX-XXXXXXX-X')
     .optional(),
 
-  address: Yup.string()
-    .max(300, 'Address must be under 300 characters')        // address STRING(300)
-    .nullable().optional(),
+  residential_address: Yup.string().max(300).nullable().optional(),
+  village: Yup.string().max(100).nullable().optional(),
 
-  village: Yup.string()
-    .max(100, 'Village must be under 100 characters')        // village STRING(100)
-    .nullable().optional(),
-
-  emergencyContact: Yup.string()
-    .max(20)                                                 // emergencyContact STRING(20)
+  // Emergency contact: user 11 digits type karta hai, display mein dash hota hai
+  emergency_contact: Yup.string()
     .nullable()
-    .transform((v) => v === '' ? null : v)
-    .matches(/^03\d{2}-\d{7}$/, 'Format: 03XX-XXXXXXX')
+    .transform((v) => (v === '' ? null : v))
+    .matches(/^\d{11}$/, 'Must be 11 digits (03XXXXXXXXX)')
     .optional(),
-
-  // disability fields — all STRING(5) → "Yes" / "No"
-  disabilityEnabled:      Yup.boolean().optional(),
-  refugeeStudent:         Yup.boolean().optional(),
-  seeingDifficulty:      Yup.boolean().optional(),
-  hearingDifficulty:     Yup.boolean().optional(),
-  walkingDifficulty:     Yup.boolean().optional(),
-  rememberingDifficulty: Yup.boolean().optional(),
-  speechDisorder:        Yup.boolean().optional(),
-  selfCare:              Yup.boolean().optional(),
 });
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const boolToYesNo = (val) => (val ? 'Yes' : 'No');
 
 const SectionHeader = ({ title }) => (
   <View style={styles.sectionHeader}>
@@ -150,59 +155,73 @@ const SectionHeader = ({ title }) => (
   </View>
 );
 
+// ── Disability Card ───────────────────────────────────────────────────────────
 const DisabilityCard = ({ item, value, onChange }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const isActive  = value === 'Yes';
+
   const handleToggle = (val) => {
     Animated.sequence([
       Animated.timing(scaleAnim, { toValue: 0.96, duration: 80, useNativeDriver: true }),
       Animated.timing(scaleAnim, { toValue: 1,    duration: 80, useNativeDriver: true }),
     ]).start();
-    onChange(val);
+    onChange(val ? 'Yes' : 'No'); // backend "Yes"/"No" string
   };
+
   return (
-    <Animated.View style={[styles.disabilityCard, value && styles.disabilityCardActive, { transform: [{ scale: scaleAnim }] }]}>
+    <Animated.View style={[
+      styles.disabilityCard,
+      isActive && styles.disabilityCardActive,
+      { transform: [{ scale: scaleAnim }] },
+    ]}>
       <View style={styles.disabilityCardLeft}>
-        <View style={[styles.disabilityIconWrap, value && styles.disabilityIconWrapActive]}>
+        <View style={[styles.disabilityIconWrap, isActive && styles.disabilityIconWrapActive]}>
           <Text style={styles.disabilityIcon}>{item.icon}</Text>
         </View>
-        <Text style={[styles.disabilityLabel, value && styles.disabilityLabelActive]} numberOfLines={2}>
+        <Text style={[styles.disabilityLabel, isActive && styles.disabilityLabelActive]} numberOfLines={2}>
           {item.label}
         </Text>
       </View>
       <Switch
-        value={value}
+        value={isActive}
         onValueChange={handleToggle}
         trackColor={{ false: C.gray200, true: '#a7f3d0' }}
-        thumbColor={value ? C.primary : C.white}
+        thumbColor={isActive ? C.primary : C.white}
         ios_backgroundColor={C.gray200}
       />
     </Animated.View>
   );
 };
 
+// ── Disability Section ────────────────────────────────────────────────────────
 const DisabilitySection = ({ data, onChange }) => {
-  const expandAnim = useRef(new Animated.Value(0)).current;
-  const [isExpanded, setIsExpanded] = useState(false);
+  const expandAnim    = useRef(new Animated.Value(data.disability === 'Yes' ? 1 : 0)).current;
+  const isEnabled     = data.disability === 'Yes';
 
   const toggleExpand = (enabled) => {
-    setIsExpanded(enabled);
-    Animated.spring(expandAnim, { toValue: enabled ? 1 : 0, friction: 8, tension: 60, useNativeDriver: false }).start();
+    Animated.spring(expandAnim, {
+      toValue: enabled ? 1 : 0,
+      friction: 8, tension: 60, useNativeDriver: false,
+    }).start();
+
     if (!enabled) {
-      const reset = {};
-      DISABILITY_ITEMS.forEach((i) => { reset[i.key] = false; });
-      onChange({ disabilityEnabled: false, ...reset });
+      const reset = { disability: 'No' };
+      DISABILITY_ITEMS.forEach((i) => { reset[i.key] = 'No'; });
+      onChange(reset);
     } else {
-      onChange({ disabilityEnabled: true });
+      onChange({ disability: 'Yes' });
     }
   };
 
   const subFieldsMaxHeight = expandAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 620] });
   const subFieldsOpacity   = expandAnim.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 0, 1] });
+  const activeCount        = DISABILITY_ITEMS.filter((i) => data[i.key] === 'Yes').length;
 
   return (
     <View style={styles.card}>
       <SectionHeader title="ADDITIONAL INFORMATION" />
 
+      {/* Refugee toggle — "Yes"/"No" string */}
       <View style={styles.toggleRow}>
         <View style={styles.toggleRowLeft}>
           <View style={[styles.toggleBadge, styles.toggleBadgeRefugee]}>
@@ -214,47 +233,46 @@ const DisabilitySection = ({ data, onChange }) => {
           </View>
         </View>
         <Switch
-          value={data.refugeeStudent}
-          onValueChange={(v) => onChange({ refugeeStudent: v })}
+          value={data.refugee_student === 'Yes'}
+          onValueChange={(v) => onChange({ refugee_student: v ? 'Yes' : 'No' })}
           trackColor={{ false: C.gray200, true: '#a7f3d0' }}
-          thumbColor={data.refugeeStudent ? C.primary : C.white}
+          thumbColor={data.refugee_student === 'Yes' ? C.primary : C.white}
           ios_backgroundColor={C.gray200}
         />
       </View>
 
       <View style={styles.cardDivider} />
 
+      {/* Disability master toggle */}
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={() => toggleExpand(!data.disabilityEnabled)}
-        style={[styles.disabilityMasterRow, data.disabilityEnabled && styles.disabilityMasterRowActive]}
+        onPress={() => toggleExpand(!isEnabled)}
+        style={styles.disabilityMasterRow}
       >
         <View style={styles.disabilityMasterLeft}>
-          <View style={[styles.toggleBadge, styles.toggleBadgeDisability, data.disabilityEnabled && styles.toggleBadgeDisabilityActive]}>
-            <Text style={[styles.toggleBadgeText, data.disabilityEnabled && { color: C.white }]}>D</Text>
+          <View style={[styles.toggleBadge, styles.toggleBadgeDisability, isEnabled && styles.toggleBadgeDisabilityActive]}>
+            <Text style={[styles.toggleBadgeText, isEnabled && { color: C.white }]}>D</Text>
           </View>
           <View>
-            <Text style={[styles.toggleRowTitle, data.disabilityEnabled && styles.disabilityMasterTitleActive]}>
+            <Text style={[styles.toggleRowTitle, isEnabled && styles.disabilityMasterTitleActive]}>
               Disability
             </Text>
             <Text style={styles.toggleRowSub}>
-              {data.disabilityEnabled ? 'Tap to disable · select types below' : 'Expands sub-fields when enabled'}
+              {isEnabled ? 'Tap to disable · select types below' : 'Expands sub-fields when enabled'}
             </Text>
           </View>
         </View>
         <View style={styles.disabilityMasterRight}>
-          {data.disabilityEnabled && (
+          {isEnabled && (
             <View style={styles.disabilityBadgeCount}>
-              <Text style={styles.disabilityBadgeCountText}>
-                {DISABILITY_ITEMS.filter((i) => data[i.key]).length}/{DISABILITY_ITEMS.length}
-              </Text>
+              <Text style={styles.disabilityBadgeCountText}>{activeCount}/{DISABILITY_ITEMS.length}</Text>
             </View>
           )}
           <Switch
-            value={data.disabilityEnabled}
+            value={isEnabled}
             onValueChange={toggleExpand}
             trackColor={{ false: C.gray200, true: '#fca5a5' }}
-            thumbColor={data.disabilityEnabled ? '#ef4444' : C.white}
+            thumbColor={isEnabled ? '#ef4444' : C.white}
             ios_backgroundColor={C.gray200}
           />
         </View>
@@ -262,13 +280,13 @@ const DisabilitySection = ({ data, onChange }) => {
 
       <Animated.View style={{ maxHeight: subFieldsMaxHeight, opacity: subFieldsOpacity, overflow: 'hidden' }}>
         <View style={styles.disabilitySubWrap}>
-          <Text style={styles.disabilitySubHint}>Select all that apply — each field is independently toggled</Text>
+          <Text style={styles.disabilitySubHint}>Select all that apply</Text>
           <View style={styles.disabilityGrid}>
             {DISABILITY_ITEMS.map((item) => (
               <DisabilityCard
                 key={item.key}
                 item={item}
-                value={!!data[item.key]}
+                value={data[item.key]}
                 onChange={(val) => onChange({ [item.key]: val })}
               />
             ))}
@@ -280,9 +298,22 @@ const DisabilitySection = ({ data, onChange }) => {
 };
 
 // ── Main Form ─────────────────────────────────────────────────────────────────
-
 const StudentFormSectionB = ({ data, onChange, onNext, onBack }) => {
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors]                 = useState({});
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  // Emergency contact: display state (with dash), backend state (raw digits)
+  const [phoneDisplay, setPhoneDisplay] = useState(
+    data.emergency_contact ? formatPhoneDisplay(data.emergency_contact) : ''
+  );
+
+  const handlePhoneChange = (text) => {
+    // Sirf digits
+    const digits = text.replace(/\D/g, '').slice(0, 11);
+    setPhoneDisplay(formatPhoneDisplay(digits));
+    // Backend ko raw 11 digits
+    onChange({ emergency_contact: digits });
+  };
 
   const handleNext = async () => {
     try {
@@ -298,13 +329,28 @@ const StudentFormSectionB = ({ data, onChange, onNext, onBack }) => {
 
   return (
     <View style={styles.container}>
+      <CustomDatePicker
+        visible={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        onConfirm={(dateStr) => {
+          // CustomDatePicker DD/MM/YYYY deta hai
+          // Backend DD-MM-YYYY chahta hai — store both
+          onChange({
+            student_dob:         dateStr,               // display (DD/MM/YYYY)
+            student_dob_backend: convertDateForBackend(dateStr), // submit (DD-MM-YYYY)
+          });
+        }}
+        initialValue={data.student_dob}
+        title="Date of Birth"
+      />
+
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Card 1: Photo */}
+        {/* ── Photo ── */}
         <View style={styles.card}>
           <SectionHeader title="PROFILE PHOTO" />
           <DocumentUpload
@@ -316,29 +362,29 @@ const StudentFormSectionB = ({ data, onChange, onNext, onBack }) => {
           />
         </View>
 
-        {/* Card 2: Basic Info */}
+        {/* ── Student Info ── */}
         <View style={styles.card}>
           <SectionHeader title="STUDENT INFORMATION" />
 
           <View style={styles.row}>
             <View style={styles.halfField}>
+              {/* gr_no → backend field */}
               <FormInput
                 label="GR Number"
                 required
-                value={data.grNumber}
-                onChangeText={(v) => onChange({ grNumber: v })}
+                value={data.gr_no}
+                onChangeText={(v) => onChange({ gr_no: v })}
                 placeholder="GR-2024-001"
                 maxLength={50}
-                error={errors.grNumber}
+                error={errors.gr_no}
               />
             </View>
             <View style={styles.halfField}>
               <FormInput
                 label="Student ID"
-                value={data.studentId}
-                onChangeText={(v) => onChange({ studentId: v })}
+                value={data.student_id}
+                onChangeText={(v) => onChange({ student_id: v })}
                 placeholder="System generated"
-                hint="Auto-assigned"
                 editable={false}
                 maxLength={50}
               />
@@ -347,42 +393,53 @@ const StudentFormSectionB = ({ data, onChange, onNext, onBack }) => {
 
           <View style={styles.row}>
             <View style={styles.halfField}>
+              {/* name_of_student → backend field */}
               <FormInput
                 label="Student Full Name"
                 required
-                value={data.studentName}
-                onChangeText={(v) => onChange({ studentName: v })}
+                value={data.name_of_student}
+                onChangeText={(v) => onChange({ name_of_student: v })}
                 placeholder="As per B-Form"
                 maxLength={150}
-                error={errors.studentName}
+                error={errors.name_of_student}
               />
             </View>
             <View style={styles.halfField}>
+              {/* sno → backend field */}
               <FormInput
-                label="Surname"
-                value={data.surname}
-                onChangeText={(v) => onChange({ surname: v })}
-                placeholder="Family name"
-                maxLength={100}
+                label="S.No"
+                value={data.sno}
+                onChangeText={(v) => onChange({ sno: v })}
+                placeholder="Serial No."
+                maxLength={50}
               />
             </View>
           </View>
 
+          {/* Date of Birth + Gender */}
           <View style={styles.row}>
             <View style={styles.halfField}>
-              <FormInput
-                label="Date of Birth"
-                required
-                value={data.dateOfBirth}
-                onChangeText={(v) => onChange({ dateOfBirth: v })}
-                placeholder="DD/MM/YYYY"
-                keyboardType="numeric"
-                maxLength={10}
-                error={errors.dateOfBirth}
-                hint="Not a future date"
-              />
+              <Text style={styles.fieldLabel}>
+                Date of Birth <Text style={styles.requiredStar}>*</Text>
+              </Text>
+              <TouchableOpacity
+                activeOpacity={0.75}
+                onPress={() => setShowDatePicker(true)}
+                style={[styles.dateBtn, errors.student_dob && styles.dateBtnError]}
+              >
+                <Text style={[styles.dateBtnText, !data.student_dob && styles.dateBtnPlaceholder]}>
+                  {data.student_dob || 'DD/MM/YYYY'}
+                </Text>
+                <Text style={styles.dateBtnIcon}>📅</Text>
+              </TouchableOpacity>
+              {errors.student_dob
+                ? <Text style={styles.fieldError}>{errors.student_dob}</Text>
+                : <Text style={styles.fieldHint}>Tap to open calendar</Text>
+              }
             </View>
+
             <View style={styles.halfField}>
+              {/* gender: "Male"/"Female" only */}
               <FormSelect
                 label="Gender"
                 required
@@ -396,6 +453,7 @@ const StudentFormSectionB = ({ data, onChange, onNext, onBack }) => {
 
           <View style={styles.row}>
             <View style={styles.halfField}>
+              {/* religion: "Islam"/"Christianity"/"Hinduism"/"Other" */}
               <FormSelect
                 label="Religion"
                 required
@@ -409,8 +467,8 @@ const StudentFormSectionB = ({ data, onChange, onNext, onBack }) => {
               <FormSelect
                 label="Mother Tongue"
                 options={MOTHER_TONGUES}
-                value={data.motherTongue}
-                onChange={(v) => onChange({ motherTongue: v })}
+                value={data.mother_tongue}
+                onChange={(v) => onChange({ mother_tongue: v })}
               />
             </View>
           </View>
@@ -420,37 +478,39 @@ const StudentFormSectionB = ({ data, onChange, onNext, onBack }) => {
               <FormSelect
                 label="Blood Group"
                 options={BLOOD_GROUPS}
-                value={data.bloodGroup}
-                onChange={(v) => onChange({ bloodGroup: v })}
+                value={data.blood_group}
+                onChange={(v) => onChange({ blood_group: v })}
               />
             </View>
             <View style={styles.halfField} />
           </View>
         </View>
 
-        {/* Card 3: Identity */}
+        {/* ── B-Form ── */}
         <View style={styles.card}>
           <SectionHeader title="IDENTITY DOCUMENTS" />
+          {/* bform_no: XXXXX-XXXXXXX-X */}
           <FormInput
             label="CNIC / B-Form No."
-            value={data.bForm}
-            onChangeText={(v) => onChange({ bForm: v })}
+            value={data.bform_no}
+            onChangeText={(raw) => onChange({ bform_no: formatBForm(raw) })}
             placeholder="XXXXX-XXXXXXX-X"
             keyboardType="numeric"
-            maxLength={20}
-            error={errors.bForm}
-            hint="Child's B-Form number"
+            maxLength={15}
+            error={errors.bform_no}
+            hint="13 digits, dashes auto-lagte hain"
           />
         </View>
 
-        {/* Card 4: Address */}
+        {/* ── Address ── */}
         <View style={styles.card}>
           <SectionHeader title="ADDRESS DETAILS" />
 
+          {/* residential_address → backend field */}
           <FormInput
-            label="Address"
-            value={data.address}
-            onChangeText={(v) => onChange({ address: v })}
+            label="Residential Address"
+            value={data.residential_address}
+            onChangeText={(v) => onChange({ residential_address: v })}
             placeholder="Complete home address..."
             multiline
             numberOfLines={3}
@@ -458,6 +518,7 @@ const StudentFormSectionB = ({ data, onChange, onNext, onBack }) => {
             style={styles.textArea}
           />
 
+          {/* village → backend field */}
           <FormInput
             label="Village / Area"
             value={data.village}
@@ -466,121 +527,112 @@ const StudentFormSectionB = ({ data, onChange, onNext, onBack }) => {
             maxLength={100}
           />
 
+          {/* emergency_contact: 11 digits raw (03XXXXXXXXX), display mein dash */}
           <FormInput
             label="Emergency Contact"
-            value={data.emergencyContact}
-            onChangeText={(v) => onChange({ emergencyContact: v })}
+            value={phoneDisplay}
+            onChangeText={handlePhoneChange}
             placeholder="03XX-XXXXXXX"
-            keyboardType="phone-pad"
-            maxLength={20}
-            error={errors.emergencyContact}
-            hint="Pakistani mobile format"
+            keyboardType="number-pad"
+            maxLength={12}
+            error={errors.emergency_contact}
+            hint="11 digits — 03XXXXXXXXX"
           />
         </View>
 
-        {/* Card 5: Disability */}
+        {/* ── Disability — refugee_student, disability, seeing_difficulty etc ── */}
         <DisabilitySection data={data} onChange={onChange} />
       </ScrollView>
 
       <View style={styles.footer}>
-        <PrimaryButton title="← Back" onPress={onBack} variant="outline" style={styles.backBtn} />
-        <PrimaryButton title="Continue →" onPress={handleNext} style={styles.nextBtn} />
+        <PrimaryButton title="← Back"     onPress={onBack}     variant="outline" style={styles.backBtn} />
+        <PrimaryButton title="Continue →" onPress={handleNext}                   style={styles.nextBtn} />
       </View>
     </View>
   );
 };
 
-// ── Styles ────────────────────────────────────────────────────────────────────
-
+// ── Colors ────────────────────────────────────────────────────────────────────
 const C = {
-  primary: '#059669',
+  primary:      '#059669',
   primaryLight: '#d1fae5',
-  primaryMid: '#6ee7b7',
-  danger: '#ef4444',
-  dangerLight: '#fee2e2',
-  gray50: '#f9fafb',
-  gray100: '#f3f4f6',
-  gray200: '#e5e7eb',
-  gray400: '#9ca3af',
-  gray600: '#4b5563',
-  gray800: '#1f2937',
-  white: '#ffffff',
+  primaryMid:   '#6ee7b7',
+  danger:       '#ef4444',
+  dangerLight:  '#fee2e2',
+  gray50:       '#f9fafb',
+  gray100:      '#f3f4f6',
+  gray200:      '#e5e7eb',
+  gray400:      '#9ca3af',
+  gray600:      '#4b5563',
+  gray800:      '#1f2937',
+  white:        '#ffffff',
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.gray100 },
-  scroll: { flex: 1 },
+  container:     { flex: 1, backgroundColor: C.gray100 },
+  scroll:        { flex: 1 },
   scrollContent: { padding: 16, paddingBottom: 12 },
   card: {
-    backgroundColor: C.white,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 0.5,
-    borderColor: C.gray200,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-    marginBottom: 12,
+    backgroundColor: C.white, borderRadius: 16, padding: 20,
+    borderWidth: 0.5, borderColor: C.gray200,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05, shadowRadius: 8, elevation: 2, marginBottom: 12,
   },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  sectionLine: { flex: 1, height: 1, backgroundColor: C.primary, opacity: 0.2 },
-  sectionTitle: { fontSize: 10, fontWeight: '700', color: C.primary, letterSpacing: 1.4, marginHorizontal: 10 },
-  row: { flexDirection: 'row', gap: 12 },
-  halfField: { flex: 1 },
-  textArea: { minHeight: 80, textAlignVertical: 'top', paddingTop: 10 },
-  toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8 },
-  toggleRowLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
-  toggleRowTitle: { fontSize: 14, fontWeight: '600', color: C.gray800 },
-  toggleRowSub: { fontSize: 11, color: C.gray400, marginTop: 1 },
-  toggleBadge: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  toggleBadgeText: { fontSize: 13, fontWeight: '700', color: C.gray600 },
-  toggleBadgeRefugee: { backgroundColor: '#eff6ff' },
-  toggleBadgeDisability: { backgroundColor: C.gray100 },
+  sectionHeader:  { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
+  sectionLine:    { flex: 1, height: 1, backgroundColor: C.primary, opacity: 0.2 },
+  sectionTitle:   { fontSize: 10, fontWeight: '700', color: C.primary, letterSpacing: 1.4, marginHorizontal: 10 },
+  row:            { flexDirection: 'row', gap: 12 },
+  halfField:      { flex: 1 },
+  textArea:       { minHeight: 80, textAlignVertical: 'top', paddingTop: 10 },
+  fieldLabel:     { fontSize: 13, fontWeight: '600', color: C.gray600, marginBottom: 6 },
+  requiredStar:   { color: C.danger },
+  dateBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    borderWidth: 1.5, borderColor: C.gray200, borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 11, backgroundColor: C.white,
+  },
+  dateBtnError:       { borderColor: C.danger },
+  dateBtnText:        { fontSize: 14, color: C.gray800, flex: 1 },
+  dateBtnPlaceholder: { color: C.gray400 },
+  dateBtnIcon:        { fontSize: 16 },
+  fieldHint:          { fontSize: 11, color: C.gray400, marginTop: 4 },
+  fieldError:         { fontSize: 11, color: C.danger, marginTop: 4 },
+  toggleRow:          { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8 },
+  toggleRowLeft:      { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  toggleRowTitle:     { fontSize: 14, fontWeight: '600', color: C.gray800 },
+  toggleRowSub:       { fontSize: 11, color: C.gray400, marginTop: 1 },
+  toggleBadge:                 { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  toggleBadgeText:             { fontSize: 13, fontWeight: '700', color: C.gray600 },
+  toggleBadgeRefugee:          { backgroundColor: '#eff6ff' },
+  toggleBadgeDisability:       { backgroundColor: C.gray100 },
   toggleBadgeDisabilityActive: { backgroundColor: '#fee2e2' },
-  cardDivider: { height: 1, backgroundColor: C.gray200, marginVertical: 12 },
-  disabilityMasterRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: 12, paddingVertical: 8 },
-  disabilityMasterRowActive: {},
-  disabilityMasterLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
-  disabilityMasterRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  cardDivider:             { height: 1, backgroundColor: C.gray200, marginVertical: 12 },
+  disabilityMasterRow:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: 12, paddingVertical: 8 },
+  disabilityMasterLeft:    { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  disabilityMasterRight:   { flexDirection: 'row', alignItems: 'center', gap: 8 },
   disabilityMasterTitleActive: { color: '#dc2626' },
-  disabilityBadgeCount: { backgroundColor: C.dangerLight, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20 },
+  disabilityBadgeCount:     { backgroundColor: C.dangerLight, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20 },
   disabilityBadgeCountText: { fontSize: 11, fontWeight: '700', color: '#dc2626' },
   disabilitySubWrap: { marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: C.gray200 },
   disabilitySubHint: { fontSize: 11, color: C.gray400, marginBottom: 12, textAlign: 'center', fontStyle: 'italic' },
-  disabilityGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  disabilityGrid:    { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   disabilityCard: {
-    width: '47.5%',
-    backgroundColor: C.gray50,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: C.gray200,
-    padding: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
+    width: '47.5%', backgroundColor: C.gray50, borderRadius: 14,
+    borderWidth: 1.5, borderColor: C.gray200, padding: 14,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8,
   },
-  disabilityCardActive: { backgroundColor: '#f0fdf4', borderColor: C.primaryMid },
-  disabilityCardLeft: { flex: 1, gap: 6 },
-  disabilityIconWrap: { width: 38, height: 38, borderRadius: 10, backgroundColor: C.gray200, alignItems: 'center', justifyContent: 'center' },
+  disabilityCardActive:     { backgroundColor: '#f0fdf4', borderColor: C.primaryMid },
+  disabilityCardLeft:       { flex: 1, gap: 6 },
+  disabilityIconWrap:       { width: 38, height: 38, borderRadius: 10, backgroundColor: C.gray200, alignItems: 'center', justifyContent: 'center' },
   disabilityIconWrapActive: { backgroundColor: C.primaryLight },
-  disabilityIcon: { fontSize: 18 },
-  disabilityLabel: { fontSize: 12, fontWeight: '500', color: C.gray600, lineHeight: 16 },
-  disabilityLabelActive: { color: '#065f46', fontWeight: '600' },
+  disabilityIcon:           { fontSize: 18 },
+  disabilityLabel:          { fontSize: 12, fontWeight: '500', color: C.gray600, lineHeight: 16 },
+  disabilityLabelActive:    { color: '#065f46', fontWeight: '600' },
   footer: {
-    backgroundColor: C.white,
-    padding: 16,
-    flexDirection: 'row',
-    gap: 12,
-    borderTopWidth: 1,
-    borderTopColor: C.gray200,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 8,
+    backgroundColor: C.white, padding: 16, flexDirection: 'row', gap: 12,
+    borderTopWidth: 1, borderTopColor: C.gray200,
+    shadowColor: '#000', shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.05, shadowRadius: 8, elevation: 8,
   },
   backBtn: { flex: 1 },
   nextBtn: { flex: 2 },

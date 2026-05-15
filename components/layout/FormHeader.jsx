@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, StatusBar, Platform } from 'react-native';
+import { View, Text, StyleSheet, StatusBar } from 'react-native';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../constants/theme';
 
 const FormHeader = () => {
@@ -28,7 +28,7 @@ const FormHeader = () => {
 
       </View>
 
-      {/* Green accent underline */}
+      {/* Accent underline */}
       <View style={styles.accentLine} />
     </>
   );
@@ -40,10 +40,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.xl,
-    paddingBottom: Spacing.lg,
-    paddingTop: Platform.OS === 'android'
-      ? (StatusBar.currentHeight || 32) + Spacing.md
-      : Spacing.xxxl + Spacing.lg,
+    paddingVertical: Spacing.lg,
     gap: Spacing.md,
   },
   logoBox: {

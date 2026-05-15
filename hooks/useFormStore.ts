@@ -1,97 +1,107 @@
+// hooks/useFormStore.ts
 import { create } from 'zustand';
-import {
-  FormStore,
-  SchoolFormData,
-  StudentFormData,
-  AcademicFormData,
-  ParentsFormData,
-} from '../types/forms';
+import { SchoolFormData, ParentsFormData } from '../types/forms';
+import { INITIAL_ACADEMIC_DATA } from '../constants/academicData';
 
 const initialSchool: SchoolFormData = {
-  schoolCode: '',
-  schoolLevel: '',
-  schoolName: '',
-  schoolShift: '',
-  district: '',
-  taluka: '',
-  unionCouncil: '',
+  schoolCode:    '',
+  schoolLevel:   '',
+  schoolName:    '',
+  schoolShift:   '',
+  district:      '',
+  taluka:        '',
+  unionCouncil:  '',
   schoolAddress: '',
 };
 
-const initialStudent: StudentFormData = {
-  studentName: '',
-  fatherName: '',
-  dateOfBirth: '',
-  gender: '',
-  religion: '',
-  nationality: 'Pakistani',
-  cnic: '',
-  bForm: '',
-  province: '',
-  city: '',
-  studentAddress: '',
-  profilePhoto: null,
-};
-
-const initialAcademic: AcademicFormData = {
-  grade: '',
-  rollNumber: '',
-  admissionDate: '',
-  previousSchool: '',
-  previousGrade: '',
-  mediumOfInstruction: '',
-  disabilityStatus: 'No',
-  disabilityType: '',
-  scholarshipStatus: 'No',
-  transferCertificate: null,
-  birthCertificate: null,
+const initialStudent = {
+  sno:             '',
+  student_id:      '',
+  school_code:     '',
+  gr_no:           '',
+  bform_no:        '',
+  name_of_student: '',
+  student_dob:         '',
+  student_dob_backend: '',
+  gender:          '',
+  religion:        '',
+  village:         '',
+  mother_tongue:   '',
+  blood_group:     '',
+  residential_address:          '',
+  emergency_contact:            '',
+  refugee_student:              'No',
+  disability:                   'No',
+  seeing_difficulty:            'No',
+  hearing_difficulty:           'No',
+  walking_difficulty:           'No',
+  remembering_or_concentrating: 'No',
+  speech_disorder:              'No',
+  self_care:                    'No',
+  profilePhoto: null as any,
 };
 
 const initialParents: ParentsFormData = {
-  fatherName: '',
-  fatherCnic: '',
-  fatherOccupation: '',
-  fatherEducation: '',
-  fatherContact: '',
-  motherName: '',
-  motherCnic: '',
-  motherOccupation: '',
-  motherEducation: '',
-  motherContact: '',
-  guardianName: '',
-  guardianRelationship: '',
-  guardianContact: '',
-  monthlyIncome: '',
-  guardianCnic: null,
+  fatherName:          '',
+  fatherCnic:          '',
+  fatherOccupation:    '',
+  fatherEducation:     '',
+  fatherContact:       '',
+  motherName:          '',
+  motherCnic:          '',
+  motherOccupation:    '',
+  motherEducation:     '',
+  motherContact:       '',
+  guardianName:        '',
+  guardianRelationship:'',
+  guardianContact:     '',
+  monthlyIncome:       '',
+  guardianCnic:        null,
 };
 
-export const useFormStore = create<FormStore>((set) => ({
-  currentStep: 1,
-  school: initialSchool,
-  student: initialStudent,
-  academic: initialAcademic,
-  parents: initialParents,
+export type StudentData  = typeof initialStudent;
+export type AcademicData = typeof INITIAL_ACADEMIC_DATA;
 
-  setCurrentStep: (step) => set({ currentStep: step }),
+interface ExtendedFormStore {
+  currentStep:        number;
+  school:             SchoolFormData;
+  student:            StudentData;
+  academic:           AcademicData;
+  parents:            ParentsFormData;
+  createdStudentDbId: number | null;  // addStudents response ka DB id
 
-  updateSchool: (data) =>
-    set((state) => ({ school: { ...state.school, ...data } })),
+  setCurrentStep:        (step: number)                   => void;
+  updateSchool:          (data: Partial<SchoolFormData>)  => void;
+  updateStudent:         (data: Partial<StudentData>)     => void;
+  updateAcademic:        (data: Partial<AcademicData>)    => void;
+  updateParents:         (data: Partial<ParentsFormData>) => void;
+  setCreatedStudentDbId: (id: number | null)              => void;
+  resetForm:             ()                               => void;
+}
 
-  updateStudent: (data) =>
-    set((state) => ({ student: { ...state.student, ...data } })),
+export const useFormStore = create<ExtendedFormStore>((set) => ({
+  currentStep:        1,
+  school:             initialSchool,
+  student:            initialStudent,
+  academic:           { ...INITIAL_ACADEMIC_DATA },
+  parents:            initialParents,
+  createdStudentDbId: null,
 
-  updateAcademic: (data) =>
-    set((state) => ({ academic: { ...state.academic, ...data } })),
+  setCurrentStep:        (step) => set({ currentStep: step }),
+  setCreatedStudentDbId: (id)   => set({ createdStudentDbId: id }),
 
-  updateParents: (data) =>
-    set((state) => ({ parents: { ...state.parents, ...data } })),
+  updateSchool:   (data) => set((s) => ({ school:   { ...s.school,   ...data } })),
+  updateStudent:  (data) => set((s) => ({ student:  { ...s.student,  ...data } })),
+  updateAcademic: (data) => set((s) => ({ academic: { ...s.academic, ...data } })),
+  updateParents:  (data) => set((s) => ({ parents:  { ...s.parents,  ...data } })),
 
   resetForm: () =>
     set({
-      currentStep: 1,
-      school: initialSchool,
-      student: initialStudent,
-      academic: initialAcademic,
-      parents: initialParents,
+      currentStep:        1,
+      school:             initialSchool,
+      student:            initialStudent,
+      academic:           { ...INITIAL_ACADEMIC_DATA },
+      parents:            initialParents,
+      createdStudentDbId: null,
     }),
 }));
